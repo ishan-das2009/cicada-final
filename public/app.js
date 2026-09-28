@@ -65,7 +65,37 @@ const api = {
 const setLeft = n => ($('#n').textContent = n);
 function say(t, err) { const m = $('#msg'); m.textContent = t; m.className = err ? 'err' : ''; }
 
-async function grant(next) {
+// ---- Post-solve popup. Built on demand from a server response; no markup, text or styling hook for it exists before that. ----
+function reveal(text) {
+  if (typeof text !== 'string' || !text || $('#veil')) return;
+  const opener = document.activeElement, bg = [$('#stage'), $('#snd')];
+  const veil = document.createElement('div'); veil.id = 'veil'; veil.className = 'veil';
+  const box = document.createElement('div'); box.className = 'veil-box'; box.tabIndex = -1;
+  box.setAttribute('role', 'alertdialog'); box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-label', 'Message'); box.setAttribute('aria-describedby', 'veil-text');
+  const p = document.createElement('p'); p.id = 'veil-text'; p.className = 'veil-text';
+  p.textContent = text;                                                   // never innerHTML
+  const x = document.createElement('button'); x.type = 'button'; x.className = 'veil-x';
+  x.setAttribute('aria-label', 'Close'); x.textContent = '\u00d7';
+  box.append(p, x); veil.append(box);
+  const close = () => {
+    removeEventListener('keydown', onKey, true); veil.remove();
+    bg.forEach(el => (el.inert = false));
+    if (opener && opener.isConnected && !opener.disabled) opener.focus();
+  };
+  const onKey = e => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    else if (e.key === 'Tab') { e.preventDefault(); (document.activeElement === x ? box : x).focus(); }   // two stops, focus never leaves
+  };
+  x.onclick = close;
+  veil.onclick = e => { if (e.target === veil) close(); };
+  addEventListener('keydown', onKey, true);
+  bg.forEach(el => (el.inert = true));
+  document.body.append(veil);
+  box.focus();   // the dialog itself, not the close button: a stray Enter/Space cannot dismiss it instantly
+}
+
+async function grant(next, secret) {
   const input = $('#resp'); input.disabled = true;
   document.body.classList.add('freeze');
   await wait(900);
@@ -76,6 +106,7 @@ async function grant(next) {
   $('#g-title').textContent = next.title;
   $('#g-body').textContent = next.body;
   show('granted');
+  if (secret) { await wait(700); reveal(secret); }   // only ever a value the server put in this very response
 }
 const terminate = () => show('dead');
 
@@ -94,7 +125,7 @@ function round(state) {
     if (r.result === 'unavailable' || r.result === 'error') return show('unavail');
     if (r.result === 'throttled') { say('...', true); input.disabled = false; return; }
     setLeft(r.remaining);
-    if (r.result === 'correct') return grant(r.next);
+    if (r.result === 'correct') return grant(r.next, r.reveal);
     if (r.result === 'locked') { $('#plates').classList.add('fade'); say('RESPONSE REJECTED', true); await wait(1500); return terminate(); }
     say('RESPONSE REJECTED', true);
     form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
