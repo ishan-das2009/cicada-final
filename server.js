@@ -18,6 +18,9 @@ const UNKNOWN_TTL = 60e3;                                                    // 
 const PUB = path.join(__dirname, 'public'), DB = path.join(__dirname, 'data', 'state.json');
 // Replace this object when the next round exists. Sent only after a verified solve.
 const NEXT = { title: 'ACCESS GRANTED', body: 'PROCEED TO NEXT SEQUENCE' };
+// SERVER-ONLY. Deliberately NOT part of NEXT: view() puts NEXT into /api/state for every solved session, and this must never travel there.
+// It is attached in exactly one place: the /api/submit response to a submission that passed check() AND left the session solved.
+const REVEAL = 'CITSCPA-FYITNLE';
 
 // ---- Configuration & secrets. With Redis (production) every secret must come from the environment. ----
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL, REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -203,7 +206,9 @@ http.createServer(async (req, res) => {
         const correct = typeof v === 'string' && v.length <= 64 && check(v);
         const out = view(await store.attempt(nk, sid, correct ? 'right' : 'wrong'));
         if (out.status === 'locked') return json(res, 423, LOCKED);
-        return json(res, 200, { result: out.status === 'solved' ? 'correct' : 'incorrect', ...out });
+        const body = { result: out.status === 'solved' ? 'correct' : 'incorrect', ...out };
+        if (correct && out.status === 'solved') body.reveal = REVEAL;   // `correct` = THIS submission passed check(); `solved` = the store accepted it (network unlocked)
+        return json(res, 200, body);
       }
     } catch { return json(res, 503, FAILED); }   // Redis down/timeout: refuse. Never create fresh state, never reset attempts.
     if (url.startsWith('/api/')) return json(res, 404, {});
