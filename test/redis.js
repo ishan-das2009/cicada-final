@@ -38,6 +38,10 @@ const device = (ip, extra = {}) => { let cookie = ''; return async (p, body) => 
   const sc = r.headers.get('set-cookie'); if (sc) cookie = sc.split(';')[0];
   return { code: r.status, setCookie: !!sc, ...(await r.json().catch(() => ({}))) }; }; };
 const sub = (d, v) => d('/api/submit', { response: v });
+// Post-solve secret (server-side test: the literal is allowed here, never in public/).
+const SECRET_TEXT = 'CITSCPA-FYITNLE', leaks = data => { const t = (Buffer.isBuffer(data) ? data.toString('latin1') : String(data)).toLowerCase();
+  return [SECRET_TEXT, SECRET_TEXT.replace(/-/g, ''), [...SECRET_TEXT].reverse().join(''), Buffer.from(SECRET_TEXT).toString('hex'), Buffer.from(SECRET_TEXT).toString('base64')].some(f => t.includes(f.toLowerCase())); };
+const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 
 (async () => {
   rproc = spawn('redis-server', ['--port', RP, '--save', '', '--appendonly', 'no'], { stdio: 'ignore' }); await sleep(700);
@@ -56,6 +60,8 @@ const sub = (d, v) => d('/api/submit', { response: v });
   const d2 = device('198.51.100.2');
   r = await d2('/api/state'); ok('G  fresh clean IP can access the puzzle (empty-Redis start)', r.status === 'open' && r.remaining === 10);
   r = await sub(d2, 'UnItY'); ok('H  correct UNITY before lock -> solved (case-insensitive)', r.result === 'correct' && r.status === 'solved' && r.next?.title === 'ACCESS GRANTED');
+  ok('H2 Redis mode: validated-correct submit carries the secret; solved /api/state does not', r.reveal === SECRET_TEXT && !leaks(JSON.stringify(await d2('/api/state'))));
+  ok('H3 Redis mode: wrong-answer, locked and unsolved-state responses carry no secret', !leaks(JSON.stringify(await sub(device('198.51.100.9'), 'nope'))) && !leaks(JSON.stringify(await sub(d1, 'UNITY'))) && !leaks(JSON.stringify(await device('198.51.100.8')('/api/state'))));
 
   const ip3 = '198.51.100.3', d3 = device(ip3);
   for (let i = 1; i <= 9; i++) await sub(d3, 'w' + i);
@@ -66,6 +72,7 @@ const sub = (d, v) => d('/api/submit', { response: v });
   ok('E  restart again: IP3 still locked', (await sub(device(ip3), 'UNITY')).result === 'locked');
   ok('E  restart: IP1 still locked', (await sub(device(ip1), 'UNITY')).result === 'locked');
   r = await d2('/api/state'); ok('I  restart after solving: same session still solved', r.status === 'solved' && r.next?.title === 'ACCESS GRANTED');
+  ok('I2 restart after solving: /api/state still has no secret; UNITY from that session re-validates server-side', !leaks(JSON.stringify(r)) && (await sub(d2, 'UNITY')).reveal === SECRET_TEXT);
 
   // Atomicity: 25 simultaneous wrong answers from 25 fresh sessions on one IP
   const ip4 = '198.51.100.4', burst = await Promise.all(Array.from({ length: 25 }, (_, i) => sub(device(ip4), 'x' + i)));
@@ -82,6 +89,7 @@ const sub = (d, v) => d('/api/submit', { response: v });
   await stopProxy();
   r = await device(ip5)('/api/state'); ok('J  Redis down: state -> 503, no fresh state', r.code === 503 && r.status === 'error');
   r = await sub(device(ip5), 'UNITY'); ok('J  Redis down: UNITY -> 503, never "correct"', r.code === 503 && r.result === 'error');
+  ok('J  Redis down: the 503 response carries no secret (fail-closed, nothing revealed)', !leaks(JSON.stringify(r)) && r.reveal === undefined);
   ok('J  Redis down: cached lock still 423', (await sub(device(ip4), 'UNITY')).code === 423);
   r = await (await fetch(B + '/health')).json(); ok('   /health works without Redis and exposes only status', Object.keys(r).join() === 'status' && r.status === 'ok');
   await restart();
@@ -94,6 +102,7 @@ const sub = (d, v) => d('/api/submit', { response: v });
   ok('   refuses to start in Redis mode without SESSION_SECRET', g.status === 1);
   const leak = fs.readdirSync(path.join(ROOT, 'public')).filter(f => /\.(js|html|css)$/.test(f)).some(f => /UPSTASH|test-token/.test(fs.readFileSync(path.join(ROOT, 'public', f), 'utf8')));
   ok('   no Redis credentials in public/; no state.json created', !leak && !fs.existsSync(path.join(ROOT, 'data/state.json')));
+  const pubFiles = walk(path.join(ROOT, 'public')); ok('   no secret anywhere under public/ (all files, binary-safe, common encodings)', pubFiles.length >= 8 && !pubFiles.some(f => leaks(fs.readFileSync(f))), `${pubFiles.length} files`);
 
   await stopSrv(); await stopProxy(); rproc.kill();
   console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED'); process.exit(fails ? 1 : 0);
