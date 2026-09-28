@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3301</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&family=Cormorant+Garamond:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rough" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="9"/></filter>
+    <radialGradient id="rb"><stop offset="0" stop-color="#8a1218" stop-opacity=".5"/><stop offset=".7" stop-color="#6b0d12" stop-opacity=".78"/><stop offset=".92" stop-color="#36050a" stop-opacity=".95"/><stop offset="1" stop-color="#36050a" stop-opacity="0"/></radialGradient>
+    <symbol id="dr" viewBox="0 0 100 100"><g filter="url(#rough)"><circle cx="50" cy="48" r="34" fill="url(#rb)"/><ellipse cx="53" cy="83" rx="7" ry="11" fill="url(#rb)"/><circle cx="19" cy="28" r="3.5" fill="#4d080d" opacity=".8"/><circle cx="82" cy="24" r="2.2" fill="#4d080d" opacity=".7"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="fx paper" aria-hidden="true"></div>
+<div class="fx grain" aria-hidden="true"></div>
+<div class="fx scan" aria-hidden="true"></div>
+<div class="fx vig" aria-hidden="true"></div>
+
+<div class="env" aria-hidden="true">
+  <svg class="b" viewBox="0 0 100 100" style="left:89%;top:-5%;--w:min(24vw,280px);--r:20deg;--o:.8"><use href="#dr"/></svg>
+  <svg class="b" viewBox="0 0 100 100" style="left:5%;top:70%;--w:26px;--r:-12deg"><use href="#dr"/></svg>
+  <svg class="b" viewBox="0 0 100 100" style="left:7.4%;top:76%;--w:18px;--r:8deg;--o:.85"><use href="#dr"/></svg>
+  <svg class="b" viewBox="0 0 100 100" style="left:8.4%;top:82%;--w:11px;--o:.7"><use href="#dr"/></svg>
+  <svg class="b" viewBox="0 0 100 100" style="left:9.6%;top:87%;--w:7px;--o:.6"><use href="#dr"/></svg>
+  <svg class="b" viewBox="0 0 200 60" style="left:1.5%;top:48%;--w:170px;--r:-8deg;--o:.3"><path d="M5 42 C50 10 92 56 195 24" stroke="#5c0a0f" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#rough)"/></svg>
+  <svg class="b" viewBox="0 0 100 100" style="left:71%;top:80%;--w:13px;--o:.7"><use href="#dr"/></svg>
+  <svg class="b late" viewBox="0 0 100 100" style="left:47%;top:20%;--w:44px;--r:30deg"><use href="#dr"/></svg>
+  <svg class="b late" viewBox="0 0 100 100" style="left:52%;top:33%;--w:22px"><use href="#dr"/></svg>
+  <svg class="b late" viewBox="0 0 100 100" style="left:40%;top:58%;--w:60px;--r:-40deg;--o:.8"><use href="#dr"/></svg>
+</div>
+<div class="ghost g1" aria-hidden="true">51.5074° N / 0.1278° W &nbsp; 0x7F3A 0x09C1</div>
+<div class="ghost g2" aria-hidden="true">◬ 1970-01-01T03:31:03Z</div>
+<div class="ghost g3" aria-hidden="true">the cicada emerges after the long dark</div>
+<div class="ghost g4" aria-hidden="true">EXAM RM 6 / SUBJ ▮▮▮▮ / 3301-F</div>
+
+<main id="stage">
+  <section id="intro" class="stage" hidden aria-live="polite"></section>
+
+  <section id="round" class="stage" hidden>
+    <svg class="b behind" viewBox="0 0 100 100" aria-hidden="true" style="left:47%;top:38%;--w:210px;--r:15deg;--o:.75"><use href="#dr"/></svg>
+    <h1>ROUND 01</h1>
+    <ul id="plates" class="plates" aria-label="Specimens"></ul>
+    <form id="form" autocomplete="off">
+      <label class="sr" for="resp">Response</label>
+      <input id="resp" name="r" type="text" maxlength="64" placeholder="ENTER RESPONSE"
+             autocomplete="off" autocapitalize="off" spellcheck="false">
+      <svg class="b" viewBox="0 0 100 100" aria-hidden="true" style="right:2px;top:40px;--w:20px;--r:10deg"><use href="#dr"/></svg>
+      <p id="msg" role="status" aria-live="assertive"></p>
+    </form>
+    <p id="left" class="left">ATTEMPTS REMAINING: <span id="n">10</span></p>
+  </section>
+
+  <section id="granted" class="stage" hidden>
+    <!-- Next round mounts here. Content is supplied by the server (NEXT in server.js). -->
+    <h1 id="g-title"></h1>
+    <p id="g-body" class="mono"></p>
+  </section>
+
+  <section id="unavail" class="stage" hidden>
+    <h1>ACCESS UNAVAILABLE</h1>
+    <p class="mono">TRY AGAIN LATER.</p>
+  </section>
+
+  <section id="dead" class="stage" hidden>
+    <h1>ACCESS TERMINATED</h1>
+    <p class="mono">THIS SEQUENCE IS NO LONGER AVAILABLE.</p>
+  </section>
+</main>
+
+<button id="snd" class="snd" type="button" aria-pressed="false" aria-label="Toggle sound">SND OFF</button>
+<script type="module" src="app.js"></script>
+</body>
+</html>

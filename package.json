@@ -1,0 +1,1 @@
+{ "name": "cicada-final", "version": "1.0.0", "private": true, "scripts": { "start": "node server.js", "test": "node test/run.js", "test:redis": "node test/redis.js", "setup": "node scripts/setup.js" }, "engines": { "node": ">=18" } }

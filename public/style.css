@@ -1,0 +1,80 @@
+:root{--bg:#e4e1d7;--ink:#1a1917;--dim:#57534b;--red:#7a0f14;--line:#aaa698;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;--serif:'Cormorant Garamond',Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;overflow-x:hidden;background-color:var(--bg);color:var(--ink);font-family:var(--mono);font-weight:300}
+body{background-image:
+  radial-gradient(ellipse 40% 30% at 12% 18%,rgba(130,105,55,.13),transparent 70%),
+  radial-gradient(ellipse 35% 25% at 85% 80%,rgba(110,95,60,.15),transparent 70%),
+  radial-gradient(circle at 72% 30%,transparent 0 13.5%,rgba(120,100,55,.10) 14%,transparent 15.5%),
+  linear-gradient(180deg,#ebe8de,#dcd9ce);background-attachment:fixed;animation:flick 11s infinite steps(1)}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+#stage{min-height:100vh;display:grid;place-items:center;padding:6vh 4vw}
+.stage{width:100%;max-width:1400px;text-align:center;position:relative}
+.stage.in{animation:rise 1.4s ease both}
+h1{font:600 clamp(1.6rem,3.6vw,3rem)/1.1 var(--serif);letter-spacing:.32em;margin:0 0 3.5rem;padding-left:.32em;text-transform:uppercase}
+#intro p{font:400 clamp(1rem,2vw,1.5rem)/1.8 var(--serif);letter-spacing:.14em;margin:.4em 0;opacity:0;transition:opacity 2.2s}
+#intro p.on{opacity:1}
+#intro p.big{font-weight:600;font-size:clamp(1.6rem,4vw,3rem);letter-spacing:.3em}
+#intro p.hot{text-shadow:1px 0 rgba(122,15,20,.6),-1px 0 rgba(0,0,0,.25)}
+.mono{font-size:.85rem;letter-spacing:.2em;color:var(--dim)}
+
+.plates{list-style:none;margin:0 auto 3.5rem;padding:0;display:flex;gap:clamp(.75rem,1.6vw,1.75rem);justify-content:center;transition:opacity 1.2s,filter 1.2s}
+.plates.fade{opacity:0;filter:grayscale(1) blur(2px)}
+.plates li{flex:1 1 0;max-width:250px;aspect-ratio:1;border:1px solid var(--line);background:#e8e5dc;
+  box-shadow:0 0 0 7px #dcd9cf,0 0 0 8px #b9b5a8,0 16px 30px rgba(50,35,20,.28);overflow:hidden;position:relative}
+.plates li:nth-child(2){transform:rotate(-.35deg)}.plates li:nth-child(4){transform:rotate(.3deg) translateY(2px)}
+.plates img{width:100%;height:100%;display:block;object-fit:cover}
+.plates li::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 26px rgba(40,30,15,.35);pointer-events:none}
+.plates li.jit img{transform:translateX(2px);filter:hue-rotate(-20deg)}
+@media(max-width:900px){
+  .plates{justify-content:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 8vw 20px;margin-inline:-4vw}
+  .plates li{flex:0 0 68vw;max-width:280px;scroll-snap-align:center}}
+
+form{max-width:420px;margin:0 auto;position:relative}
+input{width:100%;background:transparent;border:0;border-bottom:1px solid #6d695f;color:var(--ink);
+  font:400 1.25rem var(--mono);letter-spacing:.35em;text-align:center;padding:.7rem 0;border-radius:0;caret-color:var(--red)}
+input::placeholder{color:#66625a;letter-spacing:.3em;font-size:.9rem}
+input:focus-visible,.snd:focus-visible{outline:2px solid var(--ink);outline-offset:6px}
+input:disabled{opacity:.45}
+#msg{min-height:1.6em;margin:1.2rem 0 0;font-size:.8rem;letter-spacing:.25em;color:var(--red)}
+#msg.err{animation:glitch .4s steps(2)}
+.left{margin:2.2rem 0 0;font-size:.7rem;letter-spacing:.3em;color:var(--dim)}
+form.shake{animation:glitch .4s steps(2)}
+.freeze{filter:contrast(1.35) brightness(1.08)}
+
+.snd{position:fixed;right:18px;bottom:16px;z-index:8;background:none;border:0;color:#66625a;font:400 .65rem var(--mono);letter-spacing:.25em;cursor:pointer;padding:6px}
+.snd:hover{color:var(--ink)}
+
+.env{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.b{position:absolute;width:var(--w,20px);height:auto;aspect-ratio:1;transform:rotate(var(--r,0deg));opacity:var(--o,1);pointer-events:none;overflow:visible}
+.b.behind{z-index:-1}
+.b[viewBox="0 0 200 60"]{aspect-ratio:10/3}
+.late{opacity:0;transition:opacity 3s}
+body.dead .late{opacity:.85}
+
+.ghost{position:fixed;z-index:0;font-size:.6rem;letter-spacing:.2em;color:#000;opacity:.09;pointer-events:none;user-select:none}
+.g1{left:2.5vw;bottom:3vh}.g2{right:3vw;top:3vh}.g3{left:3vw;top:3vh;color:var(--red);opacity:.13}.g4{right:3vw;bottom:6vh;opacity:.07}
+main{position:relative;z-index:1}
+
+.fx{position:fixed;inset:0;pointer-events:none;z-index:3}
+.paper{opacity:.35;mix-blend-mode:multiply;z-index:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.012 .4' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 .32 0 0 0 0 .26 0 0 0 0 .16 0 0 0 .7 -.2'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>")}
+.grain{opacity:.11;mix-blend-mode:multiply;animation:grain .9s steps(4) infinite;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.028) 0 1px,transparent 1px 3px);z-index:4}
+.scan::after{content:"";position:absolute;left:0;right:0;height:18vh;top:-20vh;background:linear-gradient(transparent,rgba(0,0,0,.03),transparent);animation:sweep 11s linear infinite}
+.vig{background:radial-gradient(ellipse at center,transparent 50%,rgba(70,50,30,.38) 100%);z-index:2}
+body.static::before{content:"";position:fixed;inset:0;z-index:6;background:#000;opacity:.07;animation:grain .12s steps(2) 4}
+
+#dead.in h1{animation:bleed 2.6s steps(1) both}
+@keyframes bleed{0%{color:var(--red);text-shadow:3px 0 rgba(0,0,0,.35),-3px 0 rgba(122,15,20,.5)}25%{color:var(--ink);text-shadow:none}32%{color:var(--red);text-shadow:-2px 0 rgba(0,0,0,.3)}45%,100%{color:var(--ink);text-shadow:none}}
+@keyframes rise{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:none}}
+@keyframes flick{0%,96%,100%{opacity:1}97%{opacity:.95}98%{opacity:1}99%{opacity:.91}}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}}
+@keyframes sweep{to{transform:translateY(140vh)}}
+@keyframes glitch{0%{transform:translateX(0)}25%{transform:translateX(-5px);filter:blur(.6px)}50%{transform:translateX(4px)}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  #intro p{opacity:1}}
